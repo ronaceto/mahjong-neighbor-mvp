@@ -1,19 +1,50 @@
-import { Pool, QueryResultRow } from "pg";
+// lib/db.ts
+import { Pool } from "pg";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
-
-export async function query<T extends QueryResultRow = any>(text: string, params?: any[]) {
-  const client = await pool.connect();
-  try { const res = await client.query<T>(text, params); return res.rows; }
-  finally { client.release(); }
+declare global {
+  // eslint-disable-next-line no-var
+  var __pgPool: Pool | undefined;
 }
 
-export async function tx<T=any>(fn: (c: any)=>Promise<T>) {
+function getPool(): Pool {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error(
+      "DATABASE_URL is not set. Add it in Netlify (Site settings → Environment variables) or .env.local."
+    );
+  }
+  if (!global.__pgPool) {
+    global.__pgPool = new Pool({
+      connectionString: url,
+      ssl: { rejectUnauthorized: false }, // Neon
+    });
+  }
+  return global.__pgPool;
+}
+
+export async function query<T = any>(text: string, params?: any[]) {
+  const pool = getPool();
   const client = await pool.connect();
-  try { await client.query("begin"); const out = await fn(client); await client.query("commit"); return out; }
-  catch (e) { await client.query("rollback"); throw e; }
-  finally { client.release(); }
+  try {
+    const res = await client.query<T>(text, params);
+    return res.rows;
+  } finally {
+    client.release();
+  }
+}
+
+export async function tx<T = any>(fn: (c: any) => Promise<T>) {
+  const pool = getPool();
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+    const out = await fn(client);
+    await client.query("commit");
+    return out;
+  } catch (e) {
+    await client.query("rollback");
+    throw e;
+  } finally {
+    client.release();
+  }
 }
