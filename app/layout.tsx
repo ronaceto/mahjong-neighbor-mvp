@@ -3,7 +3,19 @@ import "./globals.css";
 import Link from "next/link";
 import { Sparkles, CalendarDays, BookOpen } from "lucide-react";
 
-export const metadata = { title: "Mahjong Neighbor" };
+export const metadata = {
+  title: "Mahjong Neighbor",
+  description: "Neighborhood Mahjong sessions, waitlists, and printable cheat sheets.",
+  themeColor: "#5d76ff",
+  openGraph: {
+    title: "Mahjong Neighbor",
+    description: "Find a seat. Learn together. Play often.",
+    url: process.env.APP_BASE_URL || "https://mahjong-neighbor-mvp.netlify.app",
+    siteName: "Mahjong Neighbor",
+    images: ["/og.png"], // we’ll add this file next
+    type: "website",
+  },
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,5 +1,6 @@
 export const runtime = "nodejs";
 import Link from "next/link";
+
 export default function CheatSheetsIndex(){
   const items = [
     { slug:"american-basics", title:"American Mahjong Basics", desc:"Tiles, setup, flow, quick rules." },
@@ -7,16 +8,18 @@ export default function CheatSheetsIndex(){
     { slug:"tile-reference", title:"Mahjong Tile Reference", desc:"Suits, winds, dragons, jokers." },
   ];
   return (
-    <main className="mx-auto max-w-3xl p-6">
-      <h1 className="text-2xl font-semibold mb-4">Cheat Sheets</h1>
-      <ul className="space-y-3">{items.map(i=>(
-        <li key={i.slug} className="rounded-2xl border p-4 hover:bg-neutral-50">
-          <Link href={`/cheatsheets/${i.slug}`} className="block">
-            <div className="font-medium">{i.title}</div>
-            <div className="text-sm text-neutral-600">{i.desc}</div>
+    <>
+      <h1 className="text-3xl font-semibold gradient-text mb-4">Cheat Sheets</h1>
+      <p className="text-white/80 mb-6">Print-friendly helpers for learners and casual play.</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map(i=>(
+          <Link key={i.slug} href={`/cheatsheets/${i.slug}`} className="surface p-5 hover:bg-white/10 transition block">
+            <div className="text-lg font-semibold text-white">{i.title}</div>
+            <div className="text-sm text-white/70 mt-1">{i.desc}</div>
+            <div className="text-xs text-white/60 mt-4 underline">Open</div>
           </Link>
-        </li>
-      ))}</ul>
-    </main>
+        ))}
+      </div>
+    </>
   );
 }
