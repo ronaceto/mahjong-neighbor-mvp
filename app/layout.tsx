@@ -1,7 +1,7 @@
 // app/layout.tsx
 import "./globals.css";
 import Link from "next/link";
-import { Mahjongg, CalendarDays, BookOpen } from "lucide-react";
+import { Sparkles, CalendarDays, BookOpen } from "lucide-react";
 
 export const metadata = { title: "Mahjong Neighbor" };
 
@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="container flex h-16 items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
               <div className="grid h-9 w-9 place-items-center rounded-xl bg-brand-500 text-white shadow-soft">
-                <Mahjongg className="h-5 w-5" />
+                <Sparkles className="h-5 w-5" />
               </div>
               <div className="text-white">
                 <div className="text-sm leading-tight opacity-75">Mahjong</div>
