@@ -2,7 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --background:#fff; --foreground:#111; }
-body { background:var(--background); color:var(--foreground); }
-.prose table { width:100%; border-collapse:collapse; }
-.prose th,.prose td { border:1px solid #e5e7eb; padding:0.5rem; }
+:root {
+  --background: #0b1020; /* deep navy */
+  --foreground: #0f172a; /* slate-900 for text on light surfaces */
+}
+
+html, body { height: 100%; }
+
+body {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(93,118,255,0.25), transparent 55%),
+    radial-gradient(900px 400px at 90% 0%, rgba(48,62,153,0.25), transparent 45%),
+    #0b1020;
+  color: #e5e7eb;
+}
+
+/* layout container */
+.container {
+  @apply mx-auto max-w-6xl px-4 sm:px-6 lg:px-8;
+}
+
+/* cards & surfaces */
+.surface {
+  @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur shadow-soft;
+}
+
+/* buttons */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition;
+}
+.btn-primary {
+  @apply bg-brand-500 text-white hover:bg-brand-600;
+}
+.btn-ghost {
+  @apply bg-white/5 text-white hover:bg-white/10 border border-white/10;
+}
+.btn-outline {
+  @apply border border-white/20 text-white hover:bg-white/10;
+}
+
+/* inputs */
+.input {
+  @apply w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-brand-500/60;
+}
+.label {
+  @apply block text-sm text-white/80 mb-1;
+}
+
+/* badges */
+.badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border border-white/15 bg-white/10 text-white/90;
+}
+.badge-green { @apply border-emerald-400/30 bg-emerald-400/10 text-emerald-200; }
+.badge-yellow { @apply border-amber-400/30 bg-amber-400/10 text-amber-200; }
+.badge-red { @apply border-rose-400/30 bg-rose-400/10 text-rose-200; }
+
+/* typography tweaks for prose pages */
+.prose {
+  @apply prose-invert;
+}
+.prose table { width: 100%; border-collapse: collapse; }
+.prose th, .prose td { border: 1px solid rgba(255,255,255,.08); padding: 0.5rem; }
+.prose a { @apply text-brand-300 hover:text-brand-200 underline; }
+
+/* simple utility for section headers */
+.section-title {
+  @apply text-xl font-semibold tracking-tight text-white;
+}
+
+/* hero gradient text */
+.gradient-text {
+  background: linear-gradient(90deg, #cfd9ff 0%, #7c93ff 40%, #5d76ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
