@@ -10,7 +10,7 @@ function getPool(): Pool {
   const url = process.env.DATABASE_URL;
   if (!url) {
     throw new Error(
-      "DATABASE_URL is not set. Add it in Netlify (Site settings → Environment variables) or .env.local."
+      "DATABASE_URL is not set. Add it in Netlify (Site settings → Environment variables) or in .env.local."
     );
   }
   if (!global.__pgPool) {
@@ -23,19 +23,17 @@ function getPool(): Pool {
 }
 
 export async function query<T = any>(text: string, params?: any[]) {
-  const pool = getPool();
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
-    const res = await client.query<T>(text, params);
-    return res.rows;
+    const res = await client.query(text, params); // no generic here
+    return res.rows as T[];
   } finally {
     client.release();
   }
 }
 
 export async function tx<T = any>(fn: (c: any) => Promise<T>) {
-  const pool = getPool();
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
     await client.query("begin");
     const out = await fn(client);
