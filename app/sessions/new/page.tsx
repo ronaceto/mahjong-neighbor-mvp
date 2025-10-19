@@ -1,22 +1,40 @@
 export const runtime = "nodejs";
-
 import AdminKeyField from "@/components/AdminKeyField";
+import { useSessionFormGuard } from "@/components/FormGuards";
+
+function Banner({ kind = "error", children }: { kind?: "success" | "error"; children: React.ReactNode }) {
+  const cls =
+    kind === "success"
+      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100"
+      : "border-rose-400/30 bg-rose-400/10 text-rose-100";
+  return <div className={`rounded-xl border p-3 text-sm ${cls}`}>{children}</div>;
+}
 
 export default function NewSessionPage() {
+  // client hook only inside a Client Component boundary:
+  // convert this component to client
+  // (add "use client"; at the very top if it isn't already a client component)
+  return <NewSessionClient />;
+}
+
+// ---- client boundary
+"use client";
+function NewSessionClient() {
+  const { err, onSubmit } = useSessionFormGuard();
+
   return (
     <section className="surface mx-auto max-w-2xl p-6">
       <h1 className="text-2xl font-semibold text-white">Create Session</h1>
-      <p className="mt-1 text-sm text-white/70">
-        Admin key required. Times are in your local timezone.
-      </p>
+      <p className="mt-1 text-sm text-white/70">Admin key required. Times are in your local timezone.</p>
 
-      <form method="post" action="/api/sessions/create" className="mt-5 grid gap-4">
-        {/* 🔐 Replaces the old plain input */}
+      {err && <div className="mt-4"><Banner>{err}</Banner></div>}
+
+      <form method="post" action="/api/sessions/create" onSubmit={onSubmit} className="mt-5 grid gap-4">
         <AdminKeyField />
 
         <div>
           <label className="label">Title</label>
-          <input name="title" placeholder="Casual Play Friday" className="input" required />
+          <input name="title" className="input" placeholder="Casual Play Friday" required />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -32,7 +50,7 @@ export default function NewSessionPage() {
 
         <div>
           <label className="label">Location</label>
-          <input name="location_text" placeholder="Neighborhood Clubhouse" className="input" required />
+          <input name="location_text" className="input" placeholder="Neighborhood Clubhouse" required />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">

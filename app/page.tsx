@@ -5,7 +5,19 @@ import Link from "next/link";
 import { query } from "@/lib/db";
 import SessionCard from "@/components/SessionCard";
 import { Plus } from "lucide-react";
+import { Flash } from "@/components/Flash";
 
+export default async function Home({ searchParams }: { searchParams?: Record<string, string> }) {
+  const ok = searchParams?.ok;
+  const error = searchParams?.error;
+  // ... existing DB query
+  return (
+    <>
+      { (ok || error) && <div className="mb-4"><Flash ok={ok} error={error} /></div> }
+      {/* rest of your existing hero + list */}
+    </>
+  );
+}
 export default async function Home() {
   const sessions = await query<{
     id: string;
@@ -21,6 +33,7 @@ export default async function Home() {
      limit 20`
   );
 
+ 
   return (
     <>
       {/* Hero */}

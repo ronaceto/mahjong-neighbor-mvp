@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 import { query } from "@/lib/db";
 import { Calendar, Clock, MapPin, Users, Download } from "lucide-react";
+import { Flash } from "@/components/Flash";
 
 function fmt(d: string) {
   return new Date(d).toLocaleString("en-US", {
@@ -21,6 +22,19 @@ export default async function SessionPage({ params }: { params: { id: string } }
      order by status desc, created_at asc`,
     [params.id]
   );
+
+  export default async function SessionPage({ params, searchParams }: { params: { id: string }, searchParams?: Record<string,string> }) {
+    const ok = searchParams?.ok;
+    const error = searchParams?.error;
+    // ... existing fetches
+    return (
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-3">{ (ok || error) && <Flash ok={ok} error={error} /> }</div>
+        {/* rest of layout */}
+      </div>
+    );
+  }
+
 
   const confirmed = signups.filter((x: any) => x.status === "confirmed");
   const waitlist = signups.filter((x: any) => x.status === "waitlist");
