@@ -7,18 +7,14 @@ import SessionCard from "@/components/SessionCard";
 import { Plus } from "lucide-react";
 import { Flash } from "@/components/Flash";
 
-export default async function Home({ searchParams }: { searchParams?: Record<string, string> }) {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Record<string, string>;
+}) {
   const ok = searchParams?.ok;
   const error = searchParams?.error;
-  // ... existing DB query
-  return (
-    <>
-      { (ok || error) && <div className="mb-4"><Flash ok={ok} error={error} /></div> }
-      {/* rest of your existing hero + list */}
-    </>
-  );
-}
-export default async function Home() {
+
   const sessions = await query<{
     id: string;
     title: string;
@@ -33,9 +29,14 @@ export default async function Home() {
      limit 20`
   );
 
- 
   return (
     <>
+      {(ok || error) && (
+        <div className="mb-4">
+          <Flash ok={ok} error={error} />
+        </div>
+      )}
+
       {/* Hero */}
       <section className="mb-8 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-700/40 via-brand-600/20 to-transparent p-6 sm:p-8 surface">
         <div className="grid gap-4 sm:grid-cols-2 sm:items-center">
@@ -44,7 +45,8 @@ export default async function Home() {
               Find a seat. Learn together. Play often.
             </h1>
             <p className="mt-3 text-white/80">
-              Neighborhood Mahjong sessions, waitlists, and printable cheat sheets — all in one place.
+              Neighborhood Mahjong sessions, waitlists, and printable cheat
+              sheets — all in one place.
             </p>
             <div className="mt-5 flex gap-3">
               <Link href="/sessions/new" className="btn btn-primary">
