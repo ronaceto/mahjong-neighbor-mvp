@@ -1,5 +1,7 @@
 export const runtime = "nodejs";
 
+import AdminKeyField from "@/components/AdminKeyField";
+
 export default function NewSessionPage() {
   return (
     <section className="surface mx-auto max-w-2xl p-6">
@@ -9,10 +11,8 @@ export default function NewSessionPage() {
       </p>
 
       <form method="post" action="/api/sessions/create" className="mt-5 grid gap-4">
-        <div>
-          <label className="label">Admin Key</label>
-          <input name="adminKey" placeholder="••••••••••" className="input" required />
-        </div>
+        {/* 🔐 Replaces the old plain input */}
+        <AdminKeyField />
 
         <div>
           <label className="label">Title</label>
