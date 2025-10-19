@@ -1,4 +1,5 @@
 export const runtime = "nodejs";
+
 import { query } from "@/lib/db";
 import { Calendar, Clock, MapPin, Users, Download } from "lucide-react";
 import { Flash } from "@/components/Flash";
@@ -11,7 +12,16 @@ function fmt(d: string) {
   });
 }
 
-export default async function SessionPage({ params }: { params: { id: string } }) {
+export default async function SessionPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams?: Record<string, string>;
+}) {
+  const ok = searchParams?.ok;
+  const error = searchParams?.error;
+
   const [s] = await query<any>(`select * from session where id=$1`, [params.id]);
   if (!s) return <main className="p-6">Not found</main>;
 
@@ -23,25 +33,19 @@ export default async function SessionPage({ params }: { params: { id: string } }
     [params.id]
   );
 
-  export default async function SessionPage({ params, searchParams }: { params: { id: string }, searchParams?: Record<string,string> }) {
-    const ok = searchParams?.ok;
-    const error = searchParams?.error;
-    // ... existing fetches
-    return (
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-3">{ (ok || error) && <Flash ok={ok} error={error} /> }</div>
-        {/* rest of layout */}
-      </div>
-    );
-  }
-
-
   const confirmed = signups.filter((x: any) => x.status === "confirmed");
   const waitlist = signups.filter((x: any) => x.status === "waitlist");
   const seatsLeft = s.seats - confirmed.length;
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
+      {/* Flash banner row */}
+      {(ok || error) && (
+        <div className="lg:col-span-3">
+          <Flash ok={ok} error={error} />
+        </div>
+      )}
+
       {/* Main card */}
       <section className="surface p-6 lg:col-span-2">
         <div className="flex flex-wrap items-start justify-between gap-3">
