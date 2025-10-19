@@ -2,9 +2,19 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { query } from "@/lib/db";
+import { query as dbQuery } from "@/lib/db";
 import { toICS } from "@/lib/ics";
 import { sendEmail } from "@/lib/mailer";
+
+// Normalize query result: supports libs that return array OR { rows: array }
+async function q<T = any>(sql: string, params?: any[]): Promise<T[]> {
+  const res: any = await dbQuery(sql, params);
+  if (Array.isArray(res)) return res as T[];
+  if (res && Array.isArray(res.rows)) return res.rows as T[];
+  // Some helpers return { rowCount, rows } or { data }
+  if (res && Array.isArray(res.data)) return res.data as T[];
+  return [];
+}
 
 function safe(env?: string) {
   return env ? "set" : "missing";
@@ -15,7 +25,6 @@ export async function POST(req: NextRequest) {
   try {
     const { sessionId, name, email } = await req.json();
 
-    // Basic input validation
     if (!sessionId || !email) {
       return NextResponse.json(
         { ok: false, where: "validate", detail: "sessionId and email are required" },
@@ -23,26 +32,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Quick env checks (no secrets logged)
     const base = process.env.NEXT_PUBLIC_SITE_URL;
-    const envReport = {
+    console.log("[signup] env check:", {
       NEXT_PUBLIC_SITE_URL: safe(base),
       DATABASE_URL: safe(process.env.DATABASE_URL),
       SMTP_HOST: safe(process.env.SMTP_HOST),
       SMTP_USER: safe(process.env.SMTP_USER),
       SMTP_PASS: safe(process.env.SMTP_PASS),
       EMAIL_FROM: safe(process.env.EMAIL_FROM),
-    };
-    console.log("[signup] env check:", envReport);
+    });
 
-    // 1) Load session first (fail fast if not found)
+    // 1) Load session (robust rows handling)
     let sess: any;
     try {
-      const { rows } = await query<any>(
+      const rows = await q<any>(
         "select id, title, starts_at, ends_at, location from session where id=$1",
         [sessionId]
       );
-      sess = rows[0];
+      sess = rows?.[0];
       if (!sess) {
         return NextResponse.json(
           { ok: false, where: "load_session", detail: "Session not found" },
@@ -57,16 +64,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2) Insert signup
+    // 2) Insert signup and get id + unsub_token
     let signup: any;
     try {
-      const ins = await query<any>(
-        `insert into signup (session_id, name, email, status)
-         values ($1,$2,$3,'confirmed')
+      const rows = await q<any>(
+        `insert into signup (session_id, name, email, status, unsub_token)
+         values ($1,$2,$3,'confirmed', coalesce($4, encode(gen_random_bytes(16), 'hex')))
          returning id, unsub_token`,
-        [sessionId, name ?? null, email]
+        [sessionId, name ?? null, email, null]
       );
-      signup = ins.rows[0];
+      signup = rows?.[0];
     } catch (e: any) {
       console.error("[signup] DB error (insert_signup):", e?.message || e);
       return NextResponse.json(
@@ -75,9 +82,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3) Build ICS
+    // 3) Build ICS + content
     const manageUrl = `${base}/sessions/${sess.id}`;
     const unsubUrl = `${base}/api/email/unsub?token=${signup?.unsub_token ?? "missing"}`;
+
     const ics = toICS({
       uid: crypto.randomUUID(),
       title: sess.title,
@@ -140,10 +148,10 @@ export async function POST(req: NextRequest) {
 
     // 5) Mark sent
     try {
-      await query("update signup set confirm_sent_at=now() where id=$1", [signup.id]);
+      await q("update signup set confirm_sent_at=now() where id=$1", [signup.id]);
     } catch (e: any) {
       console.error("[signup] DB error (mark_sent):", e?.message || e);
-      // don't fail the whole request if the email already sent
+      // don't fail the request if email already sent
     }
 
     console.log("[signup] done in", Date.now() - t0, "ms");
@@ -157,7 +165,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Optional GET for quick browser check
+// Simple GET so a browser visit doesn't 405
 export async function GET() {
   return NextResponse.json({
     ok: true,
