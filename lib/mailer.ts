@@ -7,7 +7,7 @@ type SendArgs = {
   text?: string;
   attachments?: any[];
   headers?: Record<string, string>;
-  bcc?: string | string[]; // 👈 added for internal notifications
+  bcc?: string | string[];
 };
 
 const {
@@ -17,7 +17,7 @@ const {
   SMTP_USER,
   SMTP_PASS,
   EMAIL_FROM,
-  NOTIFY_TO, // 👈 added
+  NOTIFY_TO,
 } = process.env;
 
 const transporter =
@@ -39,6 +39,20 @@ export async function sendEmail({
   headers,
   bcc,
 }: SendArgs) {
-  if (!transporter) throw new Error("SMTP not configured");
+  if (!transporter) {
+    throw new Error("SMTP not configured");
+  }
 
-  // combine any route-provided BCC with global NOTIFY_TO
+  const allBcc = [bcc, NOTIFY_TO].filter(Boolean).flat();
+
+  await transporter.sendMail({
+    from: EMAIL_FROM || SMTP_USER,
+    to,
+    subject,
+    html,
+    text,
+    attachments,
+    headers,
+    bcc: allBcc.length ? allBcc : undefined,
+  });
+}
