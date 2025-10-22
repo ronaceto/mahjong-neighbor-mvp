@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
         subject,
         text,
         html: text.replace(/\n/g, "<br>"),
+        bcc: process.env.NOTIFY_TO || undefined,
       });
     } catch (e) {
       // Don’t fail the UX if email bounces; we still saved the interest.

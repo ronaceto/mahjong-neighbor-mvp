@@ -136,6 +136,8 @@ export async function POST(req: NextRequest) {
           "List-Unsubscribe": `<${unsubUrl}>`,
           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         },
+
+        bcc: process.env.NOTIFY_TO || undefined,
       });
       console.log("[signup] email sent to", email);
     } catch (e: any) {
